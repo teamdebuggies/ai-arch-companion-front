@@ -1,0 +1,157 @@
+"use client"
+
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import {  FileText, Cloud, Building2, GitBranchPlus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+import { z } from "zod";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import { useFormik } from "formik"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+
+const steps = [
+  { id: "step1", label: "Current State", icon: FileText, description: "Fill out all your information related to the current state of your application." },
+  { id: "step2", label: "Industry", icon: Building2, description: "Select the industry you are in." },
+  { id: "step3", label: "Cloud Provider", icon: Cloud, description: "Select the cloud provider you are using." },
+  { id: "step4", label: "Environment", icon: GitBranchPlus, description: "Select how many environments do you want to deploy to." },
+  { id: "step5", label: "Review", icon: FileText, description: "Review your submission and submit it." },
+]
+
+const formSchema = z.object({
+    currentState: z.string().min(1, "Current state is required"),
+    environments: z.array(z.string()).min(1, "At least one environment is required"),
+    industry: z.string().min(1, "Industry is required"),
+    cloudProvider: z.string(),
+});
+  
+type FormValues = z.infer<typeof formSchema>;
+
+
+export default function AnimatedStepper() {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const formik = useFormik<FormValues>({
+    initialValues: {
+      currentState: "",
+      environments: ['PROD'],
+      industry: "FINANCE",
+      cloudProvider: "AWS",
+    },
+    validationSchema: toFormikValidationSchema(formSchema),
+    onSubmit: (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+
+  const currentStep = steps[currentIndex]
+
+  const handleNext = () => {
+    if (currentIndex < steps.length - 1) setCurrentIndex(currentIndex + 1)
+  }
+
+  const handleBack = () => {
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1)
+  }
+
+  return (
+    <div className="w-full max-w-3xl mx-auto px-4">
+      {/* Step Indicators */}
+      <div className="relative flex items-center justify-between mb-8">
+        {/* Background line */}
+        <div className="absolute left-6 right-6 top-[20px] h-1 bg-muted rounded-full z-0" />
+
+        {/* Progress line */}
+        <motion.div
+          className="absolute top-[20px] left-6 h-1 bg-primary rounded-full z-10"
+          initial={{ width: 0 }}
+          animate={{
+            width: `${(currentIndex / (steps.length - 1)) * 90}%`,
+          }}
+          transition={{ duration: 0.5 }}
+        />
+
+        {/* Step Icons */}
+        {steps.map((step, idx) => {
+          const Icon = step.icon
+          const isActive = idx === currentIndex
+          const isComplete = idx < currentIndex
+
+          return (
+            <div key={step.id} className="relative z-20 flex flex-col items-center">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  isActive
+                    ? "bg-primary text-white"
+                    : isComplete
+                    ? "bg-green-500 text-white"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-sm mt-2 text-center">{step.label}</span>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Step Content */}
+      <form onSubmit={formik.handleSubmit} className="space-y-6">
+        <div className="relative min-h-[200px]">
+            <AnimatePresence mode="wait">
+            <motion.div
+                key={currentStep.id}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.4 }}
+                className="p-6 rounded-xl"
+            >
+                <h3 className="text-xl font-semibold mb-2 text-center">{currentStep.label}</h3>
+                    {currentStep.id === "step1" && (
+                        <>
+                            <p className="text-sm text-muted-foreground">{currentStep.description}</p>
+                            <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="currentState" id="currentState" onChange={formik.handleChange} value={formik.values.currentState} />
+                        </>
+                    )}
+                    {currentStep.id === "step2" && (
+                        <>
+                            <p className="text-sm text-muted-foreground mb-4">{currentStep.description}</p>
+                            <Select name="industry" onValueChange={formik.handleChange} value={formik.values.industry}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select an industry" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="FINANCE">Finance</SelectItem>
+                                    <SelectItem value="HEALTHCARE" disabled>Healthcare<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="EDUCATION" disabled>Education<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="TECHNOLOGY" disabled>Technology<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="MANUFACTURING" disabled>Manufacturing<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="RETAIL" disabled>Retail<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="ENERGY" disabled>Energy<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </>
+                    )}
+                    {currentStep.id === "step3" && "Review and confirm your submission."}
+            </motion.div>
+            </AnimatePresence>
+        </div>
+        <div className="flex justify-between">
+                <Button variant="outline" onClick={handleBack} disabled={currentIndex === 0}>
+                    Back
+                </Button>
+                {currentIndex < steps.length - 1 ? (
+                    <Button onClick={handleNext}>Next</Button>
+                ) : (
+                    <Button>Submit</Button>
+                )}
+                </div>
+      </form>
+    </div>
+  )
+}
