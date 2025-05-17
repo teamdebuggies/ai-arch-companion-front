@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import Loader from "@/components/ui/loader"
+import PreviewModal from "@/PreviewModal"
 
 const steps = [
   { id: "step1", label: "Current State", icon: FileText, description: "Fill out all your information related to the current state of your application." },
@@ -25,7 +26,7 @@ const steps = [
 
 const formSchema = z.object({
     actual_state: z.string().min(1, "Current state is required"),
-    environments: z.string().min(1, "At least one environment is required"),
+    environment: z.string().min(1, "At least one environment is required"),
     industry: z.string().min(1, "Industry is required"),
     cloud: z.string(),
 });
@@ -37,11 +38,13 @@ const API_URL = "http://localhost:3333/agents/process"
 export default function AnimatedStepper() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const [dataResponse, setDataResponse] = useState({})
+  const [previewModal, setPreviewModal] = useState(false)
 
   const formik = useFormik<FormValues>({
     initialValues: {
       actual_state: "",
-      environments: 'Production',
+      environment: 'Production',
       industry: "Finance",
       cloud: "AWS",
     },
@@ -52,7 +55,8 @@ export default function AnimatedStepper() {
 
       try {
         const response = await axios.post(API_URL, values);
-        console.log("Response:", response.data);
+        setDataResponse(response.data)
+        setPreviewModal(true)
       } catch (error) {
         console.error("Error submitting form:", error);
       } finally {
@@ -116,7 +120,7 @@ export default function AnimatedStepper() {
       </div>
 
       {/* Step Content */}
-      <form onSubmit={formik.handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         <div className="relative min-h-[200px]">
             <AnimatePresence mode="wait">
             <motion.div
@@ -156,7 +160,7 @@ export default function AnimatedStepper() {
                     {currentStep.id === "step3" && (
                         <>
                             <p className="text-sm text-muted-foreground mb-4">{currentStep.description}</p>
-                            <Select name="industry" onValueChange={formik.handleChange} value={formik.values.cloud}>
+                            <Select name="cloud" onValueChange={formik.handleChange} value={formik.values.cloud}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select an cloud provider" />
                                 </SelectTrigger>
@@ -175,7 +179,7 @@ export default function AnimatedStepper() {
                             <div className="flex flex-col space-y-2">
                               <div className="flex space-x-2 items-center">
                                 <Checkbox
-                                  checked={formik.values.environments.includes("Production")}
+                                  checked={formik.values.environment.includes("Production")}
                                   name="environment"
                                   id="environment-prod"
                                 />
@@ -207,31 +211,37 @@ export default function AnimatedStepper() {
                         </>
                     )}
                     {currentStep.id === "step5" && (
-                        <>
+                        <form onSubmit={formik.handleSubmit}>
                             <p className="text-sm text-muted-foreground">{currentStep.description}</p>
                             <ul>
                               <li className="mb-2 mt-2"><b>Actual state:</b><br /> <p style={{ lineHeight: 1.2 }}>{formik.values.actual_state}</p></li>
                               <li className="mb-2"><b>Industry:</b><br /> <p>{formik.values.industry}</p></li>
                               <li className="mb-2"><b>Cloud provider:</b><br /> <p>{formik.values.cloud}</p></li>
-                              <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environments}</p></li>
+                              <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environment}</p></li>
                             </ul>
-                        </>
+                        </form>
                     )}
             </motion.div>
             </AnimatePresence>
         </div>
-        <div className="flex justify-between">
-                {isLoading && <Loader text="Loading..." />}
+        <div className="flex justify-between self-end">
                 <Button type="button" variant="outline" onClick={handleBack} disabled={currentIndex === 0}>
                     Back
                 </Button>
                 {currentIndex < steps.length - 1 ? (
                     <Button type="button" onClick={handleNext}>Next</Button>
                 ) : (
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" onClick={() => formik.handleSubmit()}>Submit</Button>
                 )}
-                </div>
-      </form>
+        </div>
+        {isLoading && <Loader text="Loading..." />}
+        <PreviewModal
+          open={previewModal}
+          onClose={() => setPreviewModal(false)}
+          onConfirm={() => setPreviewModal(false)}
+          data={dataResponse}
+        />
+      </div>
     </div>
   )
 }
