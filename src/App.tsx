@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 //custom components
 import PreviewModal from "@/PreviewModal";
@@ -14,6 +22,7 @@ import PreviewModal from "@/PreviewModal";
 const formSchema = z.object({
   name: z.string().min(1, "Name required").max(50, "Name too long"),
   email: z.string().email("Invalid email").min(1, "Email required"),
+  cloud: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -26,6 +35,7 @@ const BasicForm: React.FC = () => {
     initialValues: {
       name: "",
       email: "",
+      cloud: "AWS",
     },
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit: (values) => {
@@ -84,6 +94,42 @@ const BasicForm: React.FC = () => {
               />
               {formik.touched.email && formik.errors.email && (
                 <p className="text-sm text-red-500 mt-1">{formik.errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="cloud" className="mb-2">Select Cloud Provider</Label>
+              <Select name="cloud" value={formik.values.cloud} onValueChange={formik.handleChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a cloud provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AWS">AWS</SelectItem>
+                  <SelectItem value="GCP" disabled={true}>GCP<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                  <SelectItem value="Azure" disabled>Azure<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                  <SelectItem value="Azure">Suggest me one</SelectItem>
+                </SelectContent>
+              </Select>
+              {formik.touched.name && formik.errors.name && (
+                <p className="text-sm text-red-500 mt-1">{formik.errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="name" className="mb-2">Name</Label>
+              <Select name="cloud" value={formik.values.cloud} onValueChange={formik.handleChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a cloud provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AWS">AWS</SelectItem>
+                  <SelectItem value="GCP" disabled={true}>GCP<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                  <SelectItem value="Azure" disabled>Azure<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                  <SelectItem value="Azure">Suggest me one</SelectItem>
+                </SelectContent>
+              </Select>
+              {formik.touched.name && formik.errors.name && (
+                <p className="text-sm text-red-500 mt-1">{formik.errors.name}</p>
               )}
             </div>
 
