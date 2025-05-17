@@ -57,7 +57,7 @@ export default function AnimatedStepper() {
       try {
         const response = await axios.post(API_URL, {...values, chatId});
         //format data
-        if (API_URL === "http://localhost:3333/agents/process") {
+        if (API_URL !== "https://debuggies.app.n8n.cloud/webhook/cf4ec7e0-f8cc-46cc-95b4-c6e696d43688") {
           setDataResponse({...response.data.data, functionalDiagram: response.data.data.diagrams?.functional, infrastructureDiagram: response.data.data.diagrams?.infrastructure})
         }else{
           const formattedData = {
@@ -104,7 +104,7 @@ export default function AnimatedStepper() {
           className="absolute top-[20px] left-6 h-1 bg-primary rounded-full z-10"
           initial={{ width: 0 }}
           animate={{
-            width: `${(currentIndex / (steps.length - 1)) * 90}%`,
+            width: `${(currentIndex / (steps.length - 1)) * 95}%`,
           }}
           transition={{ duration: 0.5 }}
         />
@@ -266,7 +266,7 @@ export default function AnimatedStepper() {
             </motion.div>
             </AnimatePresence>
         </div>
-        <div className="flex justify-between self-end">
+        <div className="flex justify-between self-end mx-4">
                 <Button type="button" variant="outline" onClick={handleBack} disabled={currentIndex === 0}>
                     Back
                 </Button>
