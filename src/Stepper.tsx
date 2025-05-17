@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import axios from "axios"
 import { motion, AnimatePresence } from "framer-motion"
-import { FileText, Cloud, Building2, GitBranchPlus } from "lucide-react"
+import { FileText, Cloud, Building2, PackageOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { z } from "zod";
@@ -12,37 +13,51 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import Loader from "@/components/ui/loader"
 
 const steps = [
   { id: "step1", label: "Current State", icon: FileText, description: "Fill out all your information related to the current state of your application." },
   { id: "step2", label: "Industry", icon: Building2, description: "Select the industry you are in." },
   { id: "step3", label: "Cloud Provider", icon: Cloud, description: "Select the desire cloud provider." },
-  { id: "step4", label: "Environment", icon: GitBranchPlus, description: "Select how many environments do you want to deploy to." },
+  { id: "step4", label: "Environment", icon: PackageOpen, description: "Select how many environments do you want to deploy to." },
   { id: "step5", label: "Review", icon: FileText, description: "Review your submission and submit it." },
 ]
 
 const formSchema = z.object({
     actual_state: z.string().min(1, "Current state is required"),
-    environments: z.array(z.string()).min(1, "At least one environment is required"),
+    environments: z.string().min(1, "At least one environment is required"),
     industry: z.string().min(1, "Industry is required"),
     cloud: z.string(),
 });
   
 type FormValues = z.infer<typeof formSchema>;
 
+const API_URL = "http://localhost:3333/agents/process"
 
 export default function AnimatedStepper() {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const formik = useFormik<FormValues>({
     initialValues: {
       actual_state: "",
-      environments: ['PROD'],
-      industry: "FINANCE",
+      environments: 'Production',
+      industry: "Finance",
       cloud: "AWS",
     },
     validationSchema: toFormikValidationSchema(formSchema),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
+      setIsLoading(true)
+      console.log("Submitting form...", values)
+
+      try {
+        const response = await axios.post(API_URL, values);
+        console.log("Response:", response.data);
+      } catch (error) {
+        console.error("Error submitting form:", error);
+      } finally {
+        setIsLoading(false)
+      }
       console.log("Formulario enviado:", values);
     },
   });
@@ -127,13 +142,13 @@ export default function AnimatedStepper() {
                                     <SelectValue placeholder="Select an industry" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="FINANCE">Finance</SelectItem>
-                                    <SelectItem value="HEALTHCARE" disabled>Healthcare<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
-                                    <SelectItem value="EDUCATION" disabled>Education<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
-                                    <SelectItem value="TECHNOLOGY" disabled>Technology<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
-                                    <SelectItem value="MANUFACTURING" disabled>Manufacturing<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
-                                    <SelectItem value="RETAIL" disabled>Retail<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
-                                    <SelectItem value="ENERGY" disabled>Energy<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Finance">Finance</SelectItem>
+                                    <SelectItem value="Healthcare" disabled>Healthcare<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Education" disabled>Education<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Technology" disabled>Technology<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Manufacturing" disabled>Manufacturing<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Retail" disabled>Retail<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Energy" disabled>Energy<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
                                 </SelectContent>
                             </Select>
                         </>
@@ -160,7 +175,7 @@ export default function AnimatedStepper() {
                             <div className="flex flex-col space-y-2">
                               <div className="flex space-x-2 items-center">
                                 <Checkbox
-                                  checked={formik.values.environments.includes("PROD")}
+                                  checked={formik.values.environments.includes("Production")}
                                   name="environment"
                                   id="environment-prod"
                                 />
@@ -194,20 +209,26 @@ export default function AnimatedStepper() {
                     {currentStep.id === "step5" && (
                         <>
                             <p className="text-sm text-muted-foreground">{currentStep.description}</p>
-                            <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="actual_state" id="actualState" onChange={formik.handleChange} value={formik.values.actual_state} />
+                            <ul>
+                              <li className="mb-2 mt-2"><b>Actual state:</b><br /> <p style={{ lineHeight: 1.2 }}>{formik.values.actual_state}</p></li>
+                              <li className="mb-2"><b>Industry:</b><br /> <p>{formik.values.industry}</p></li>
+                              <li className="mb-2"><b>Cloud provider:</b><br /> <p>{formik.values.cloud}</p></li>
+                              <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environments}</p></li>
+                            </ul>
                         </>
                     )}
             </motion.div>
             </AnimatePresence>
         </div>
         <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack} disabled={currentIndex === 0}>
+                {isLoading && <Loader text="Loading..." />}
+                <Button type="button" variant="outline" onClick={handleBack} disabled={currentIndex === 0}>
                     Back
                 </Button>
                 {currentIndex < steps.length - 1 ? (
-                    <Button onClick={handleNext}>Next</Button>
+                    <Button type="button" onClick={handleNext}>Next</Button>
                 ) : (
-                    <Button>Submit</Button>
+                    <Button type="submit">Submit</Button>
                 )}
                 </div>
       </form>
