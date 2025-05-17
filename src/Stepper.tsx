@@ -54,13 +54,11 @@ export default function AnimatedStepper() {
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit: async (values) => {
       setIsLoading(true)
-      console.log("Submitting form...", values)
-
       try {
         const response = await axios.post(API_URL, {...values, chatId});
         //format data
         if (API_URL === "http://localhost:3333/agents/process") {
-          setDataResponse({...response, functionalDiagram: response.data.diagrams?.functional, infrastructureDiagram: response.data.diagrams?.infrastructure})
+          setDataResponse({...response.data.data, functionalDiagram: response.data.data.diagrams?.functional, infrastructureDiagram: response.data.data.diagrams?.infrastructure})
         }else{
           const formattedData = {
             functionalDiagram: response.data[0].json.mermaid_1,
@@ -80,7 +78,6 @@ export default function AnimatedStepper() {
       } finally {
         setIsLoading(false)
       }
-      console.log("Formulario enviado:", values);
     },
   });
 
@@ -276,7 +273,7 @@ export default function AnimatedStepper() {
                 {currentIndex < steps.length - 1 ? (
                     <Button type="button" onClick={handleNext}>Next</Button>
                 ) : (
-                    <Button type="submit" onClick={() => formik.handleSubmit()}>Submit</Button>
+                    <Button type="submit" disabled={isEditing} onClick={() => formik.handleSubmit()}>Submit</Button>
                 )}
         </div>
         {isLoading && <Loader text="Loading..." />}
