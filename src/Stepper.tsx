@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import {  FileText, Cloud, Building2, GitBranchPlus } from "lucide-react"
+import { FileText, Cloud, Building2, GitBranchPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { z } from "zod";
@@ -11,20 +11,21 @@ import { useFormik } from "formik"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const steps = [
   { id: "step1", label: "Current State", icon: FileText, description: "Fill out all your information related to the current state of your application." },
   { id: "step2", label: "Industry", icon: Building2, description: "Select the industry you are in." },
-  { id: "step3", label: "Cloud Provider", icon: Cloud, description: "Select the cloud provider you are using." },
+  { id: "step3", label: "Cloud Provider", icon: Cloud, description: "Select the desire cloud provider." },
   { id: "step4", label: "Environment", icon: GitBranchPlus, description: "Select how many environments do you want to deploy to." },
   { id: "step5", label: "Review", icon: FileText, description: "Review your submission and submit it." },
 ]
 
 const formSchema = z.object({
-    currentState: z.string().min(1, "Current state is required"),
+    actual_state: z.string().min(1, "Current state is required"),
     environments: z.array(z.string()).min(1, "At least one environment is required"),
     industry: z.string().min(1, "Industry is required"),
-    cloudProvider: z.string(),
+    cloud: z.string(),
 });
   
 type FormValues = z.infer<typeof formSchema>;
@@ -35,10 +36,10 @@ export default function AnimatedStepper() {
 
   const formik = useFormik<FormValues>({
     initialValues: {
-      currentState: "",
+      actual_state: "",
       environments: ['PROD'],
       industry: "FINANCE",
-      cloudProvider: "AWS",
+      cloud: "AWS",
     },
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit: (values) => {
@@ -115,7 +116,7 @@ export default function AnimatedStepper() {
                     {currentStep.id === "step1" && (
                         <>
                             <p className="text-sm text-muted-foreground">{currentStep.description}</p>
-                            <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="currentState" id="currentState" onChange={formik.handleChange} value={formik.values.currentState} />
+                            <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="actual_state" id="actualState" onChange={formik.handleChange} value={formik.values.actual_state} />
                         </>
                     )}
                     {currentStep.id === "step2" && (
@@ -137,7 +138,65 @@ export default function AnimatedStepper() {
                             </Select>
                         </>
                     )}
-                    {currentStep.id === "step3" && "Review and confirm your submission."}
+                    {currentStep.id === "step3" && (
+                        <>
+                            <p className="text-sm text-muted-foreground mb-4">{currentStep.description}</p>
+                            <Select name="industry" onValueChange={formik.handleChange} value={formik.values.cloud}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select an cloud provider" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="AWS">AWS</SelectItem>
+                                    <SelectItem value="GCP" disabled>GCP<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Azure" disabled>Azure<Badge className="bg-yellow-400">Premium</Badge></SelectItem>
+                                    <SelectItem value="Suggest" disabled>Suggest me one</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </>
+                    )}
+                    {currentStep.id === "step4" && (
+                        <>
+                            <p className="text-sm text-muted-foreground mb-4">{currentStep.description}</p>
+                            <div className="flex flex-col space-y-2">
+                              <div className="flex space-x-2 items-center">
+                                <Checkbox
+                                  checked={formik.values.environments.includes("PROD")}
+                                  name="environment"
+                                  id="environment-prod"
+                                />
+                                <label htmlFor="environment">
+                                  Production
+                                </label>
+                              </div>
+                              <div className="flex space-x-2 items-center">
+                                <Checkbox
+                                  disabled
+                                  name="environment"
+                                  id="environment-staging"
+                                />
+                                <label htmlFor="environment">
+                                  Staging<Badge className="bg-yellow-400 ml-2">Premium</Badge>
+                                </label>
+                              </div>
+                              <div className="flex space-x-2 items-center">
+                                <Checkbox
+                                  disabled
+                                  name="environment"
+                                  id="environment-dev"
+                                />
+                                <label htmlFor="environment">
+                                  Development<Badge className="bg-yellow-400 ml-2">Premium</Badge>
+                                </label>
+                              </div>
+                            </div>
+                        </>
+                    )}
+                    {currentStep.id === "step5" && (
+                        <>
+                            <p className="text-sm text-muted-foreground">{currentStep.description}</p>
+                            <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="actual_state" id="actualState" onChange={formik.handleChange} value={formik.values.actual_state} />
+                        </>
+                    )}
             </motion.div>
             </AnimatePresence>
         </div>
