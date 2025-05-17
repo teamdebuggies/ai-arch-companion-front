@@ -19,7 +19,7 @@ interface PreviewModalProps {
 const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, data }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+      <DialogContent className="w-[90vw] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-center">Results</DialogTitle>
         </DialogHeader>
