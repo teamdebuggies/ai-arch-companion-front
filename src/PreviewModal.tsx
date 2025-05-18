@@ -1,4 +1,6 @@
 import React from "react";
+import { useState } from "react"
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +18,24 @@ interface PreviewModalProps {
   data: Record<string, string>;
 }
 
+const API_URL_GITHUB = "https://debuggies.app.n8n.cloud/webhook/0f1b2c4d-3a5e-4c7b-9f6d-0a2e3f4b5c6d"
+
 const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, data }) => {
+  
+  const [isLoading, setIsLoading] = useState(false)
+
+  const onSubmit = async () => {
+      setIsLoading(true)
+      try {
+        const response = await axios.post(API_URL_GITHUB, { ...data});
+        console.log("Response from GitHub:", response.data);
+      } catch (error) {
+        console.error("Error submitting form:", error);
+      } finally {
+        setIsLoading(false)
+      }
+  }
+  
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[90vw] max-h-[80vh] flex flex-col">
@@ -65,7 +84,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, d
           <Button variant={'outline'} onClick={onClose}>
             Change variables
           </Button>
-          <Button onClick={onConfirm}>Confirm</Button>
+          <Button onClick={onSubmit}>Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

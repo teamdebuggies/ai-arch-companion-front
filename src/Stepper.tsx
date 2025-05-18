@@ -81,7 +81,6 @@ export default function AnimatedStepper() {
     },
   });
 
-
   const currentStep = steps[currentIndex]
 
   const handleNext = () => {
