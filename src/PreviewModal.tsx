@@ -17,11 +17,12 @@ interface PreviewModalProps {
   onClose: () => void;
   onConfirm: () => void;
   data: Record<string, string>;
+  handleGithubResponse: (response: any) => void;
 }
 
 const API_URL_GITHUB = "https://localhost:3333/github/create-project";
 
-const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, data }) => {
+const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, data, handleGithubResponse }) => {
   
   const [isLoading, setIsLoading] = useState(false)
 
@@ -29,7 +30,9 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, data }) => {
       setIsLoading(true)
       try {
         const response = await axios.post(API_URL_GITHUB, { ...data});
+        handleGithubResponse(response.data)
         console.log("Response from GitHub:", response.data);
+        onClose();
       } catch (error) {
         console.error("Error submitting form:", error);
       } finally {

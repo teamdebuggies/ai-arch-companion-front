@@ -45,6 +45,7 @@ export default function AnimatedStepper() {
   const [previewModal, setPreviewModal] = useState(false)
   const [isFirstTimeRequesting, setIsFirstTimeRequesting] = useState(true)
   const [outputFirstEnvironment, setOutputFirstEnvironment] = useState("")
+  const [githubResponse, setGithubResponse] = useState("")
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -108,6 +109,10 @@ export default function AnimatedStepper() {
 
   const handleBack = () => {
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1)
+  }
+
+  const handleGithubResponse = (response: any) => {
+    setGithubResponse(response)
   }
 
   return (
@@ -264,6 +269,12 @@ export default function AnimatedStepper() {
                                   <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="recommendations" id="recommendations" onChange={formik.handleChange} value={formik.values.recommendations} />
                                 </>
                               )}
+                              { githubResponse && (
+                                <li className="mb-2">
+                                  <b>Github URL:</b><br />
+                                  <p>{githubResponse.repository.html_url}</p>
+                                </li>
+                              )}
                             </ul>
                         </form>
                     )}
@@ -286,6 +297,7 @@ export default function AnimatedStepper() {
           onClose={() => setPreviewModal(false)}
           onConfirm={() => setPreviewModal(false)}
           data={dataResponse}
+          handleGithubResponse={handleGithubResponse}
         />
       </div>
     </div>
