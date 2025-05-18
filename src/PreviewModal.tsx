@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader"
 import Mermaid from "@/Mermaid";
 
 interface PreviewModalProps {
@@ -18,9 +19,9 @@ interface PreviewModalProps {
   data: Record<string, string>;
 }
 
-const API_URL_GITHUB = "https://debuggies.app.n8n.cloud/webhook/0f1b2c4d-3a5e-4c7b-9f6d-0a2e3f4b5c6d"
+const API_URL_GITHUB = "https://localhost:3333/github/create-project";
 
-const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, data }) => {
+const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, data }) => {
   
   const [isLoading, setIsLoading] = useState(false)
 
@@ -85,6 +86,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, d
             Add recommendations
           </Button>
           <Button onClick={onSubmit}>Confirm</Button>
+          {isLoading && <Loader text="Loading..." />}
         </DialogFooter>
       </DialogContent>
     </Dialog>
