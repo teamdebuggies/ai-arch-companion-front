@@ -263,7 +263,7 @@ export default function AnimatedStepper() {
                               <li className="mb-2"><b>Industry:</b><br /> <p>{formik.values.industry}</p></li>
                               <li className="mb-2"><b>Cloud provider:</b><br /> <p>{formik.values.cloud}</p></li>
                               <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environment}</p></li>
-                              {!isFirstTimeRequesting && !isLoading && (
+                              {!isFirstTimeRequesting && !isLoading && githubResponse === "" && (
                                 <>
                                   <b className="text-sm mt-8">Add your recommendations here. Any relevant change that you want to made</b>
                                   <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="recommendations" id="recommendations" onChange={formik.handleChange} value={formik.values.recommendations} />
@@ -272,7 +272,7 @@ export default function AnimatedStepper() {
                               { githubResponse && (
                                 <li className="mb-2">
                                   <b>Github URL:</b><br />
-                                  <p>{githubResponse.repository.html_url}</p>
+                                  <a  className="text-blue-500" href={githubResponse.repository.html_url} target="_blank" rel="noopener noreferrer">Github Repository</a>
                                 </li>
                               )}
                             </ul>
