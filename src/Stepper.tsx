@@ -3,7 +3,7 @@
 import { useState } from "react"
 import axios from "axios"
 import { motion, AnimatePresence } from "framer-motion"
-import { FileText, Cloud, Building2, PackageOpen, Pencil } from "lucide-react"
+import { FileText, Cloud, Building2, PackageOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 import { z } from "zod";
@@ -43,7 +43,6 @@ export default function AnimatedStepper() {
   const [isLoading, setIsLoading] = useState(false)
   const [dataResponse, setDataResponse] = useState({})
   const [previewModal, setPreviewModal] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
   const [isFirstTimeRequesting, setIsFirstTimeRequesting] = useState(true)
   const [outputFirstEnvironment, setOutputFirstEnvironment] = useState("")
 
@@ -64,15 +63,16 @@ export default function AnimatedStepper() {
           setIsFirstTimeRequesting(false)
         }else{
           const response = await axios.post(API_URL_SECOND_REQUEST, {existing_output: outputFirstEnvironment, recommendations: values.recommendations});
-          setOutputFirstEnvironment(response.data[0].json)
+          setOutputFirstEnvironment(response.data[0]?.json)
           const formattedData = {
-            functionalDiagram: response.data[0].json.mermaid_1,
-            infrastructureDiagram: response.data[0].json.mermaid_2,
-            rationale: response.data[0].json.markdown_rationale,
-            terraform: response.data[0].json.terraform_template,
-            architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
+            functionalDiagram: response.data[0]?.json.mermaid_1,
+            infrastructureDiagram: response.data[0]?.json.mermaid_2,
+            rationale: response.data[0]?.json.markdown_rationale,
+            terraform: response.data[0]?.json.terraform_template,
+            architecturalDecisionRecord: response.data[0]?.json.markdown_architectural_decision_record,
           }
-          setDataResponse(formattedData)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setDataResponse((prev: any) => ({functionalDiagram: formattedData.functionalDiagram, infrastructureDiagram: formattedData.infrastructureDiagram, rationale: prev.rationale + '\n\n' + formattedData.rationale, terraform: prev.terraform + '\n\n' + formattedData.terraform, architecturalDecisionRecord: prev.architecturalDecisionRecord + '\n\n' + formattedData.architecturalDecisionRecord}))
           setPreviewModal(true)
           return
         }
@@ -82,14 +82,14 @@ export default function AnimatedStepper() {
           setDataResponse({...response.data.data, functionalDiagram: response.data.data.diagrams?.functional, infrastructureDiagram: response.data.data.diagrams?.infrastructure})
         }else{
           const formattedData = {
-            functionalDiagram: response.data[0].json.mermaid_1,
-            infrastructureDiagram: response.data[0].json.mermaid_2,
-            rationale: response.data[0].json.markdown_rationale,
-            terraform: response.data[0].json.terraform_template,
-            architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
+            functionalDiagram: response.data[0]?.json.mermaid_1,
+            infrastructureDiagram: response.data[0]?.json.mermaid_2,
+            rationale: response.data[0]?.json.markdown_rationale,
+            terraform: response.data[0]?.json.terraform_template,
+            architecturalDecisionRecord: response.data[0]?.json.markdown_architectural_decision_record,
           }
           setDataResponse(formattedData)
-          setOutputFirstEnvironment(response.data[0].json)
+          setOutputFirstEnvironment(response.data[0]?.json)
         }
         setPreviewModal(true)
       } catch (error) {
@@ -251,15 +251,6 @@ export default function AnimatedStepper() {
                               <li className="mb-2 mt-2">
                                 <div className="flex justify-between items-center">
                                   <b>Actual state:</b>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setIsEditing(!isEditing)}
-                                    className="h-8 w-8"
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
                                 </div>
                                   <p className="mt-2 whitespace-pre-wrap" style={{ lineHeight: 1.2 }}>
                                     {formik.values.actual_state}
@@ -268,8 +259,12 @@ export default function AnimatedStepper() {
                               <li className="mb-2"><b>Industry:</b><br /> <p>{formik.values.industry}</p></li>
                               <li className="mb-2"><b>Cloud provider:</b><br /> <p>{formik.values.cloud}</p></li>
                               <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environment}</p></li>
-                              <b className="text-sm mt-8">Add your recommendations here. Any relevant change that you want to made</b>
-                              <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="recommendations" id="recommendations" onChange={formik.handleChange} value={formik.values.recommendations} />
+                              {!isFirstTimeRequesting && !isLoading && (
+                                <>
+                                  <b className="text-sm mt-8">Add your recommendations here. Any relevant change that you want to made</b>
+                                  <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="recommendations" id="recommendations" onChange={formik.handleChange} value={formik.values.recommendations} />
+                                </>
+                              )}
                             </ul>
                         </form>
                     )}
@@ -283,7 +278,7 @@ export default function AnimatedStepper() {
                 {currentIndex < steps.length - 1 ? (
                     <Button type="button" onClick={handleNext}>Next</Button>
                 ) : (
-                    <Button type="submit" disabled={isEditing} onClick={() => formik.handleSubmit()}>Submit</Button>
+                    <Button type="submit" onClick={() => formik.handleSubmit()}>Submit</Button>
                 )}
         </div>
         {isLoading && <Loader text="Loading..." />}
