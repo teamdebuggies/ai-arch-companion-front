@@ -63,7 +63,7 @@ const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, onConfirm, d
 
         <DialogFooter className="flex justify-end gap-2 mt-4 pt-4 border-t">
           <Button variant={'outline'} onClick={onClose}>
-            Change variables
+            Add recommendations
           </Button>
           <Button onClick={onConfirm}>Confirm</Button>
         </DialogFooter>
