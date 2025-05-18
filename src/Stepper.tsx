@@ -29,20 +29,23 @@ const formSchema = z.object({
     environment: z.string().min(1, "At least one environment is required"),
     industry: z.string().min(1, "Industry is required"),
     cloud: z.string(),
+    recommendations: z.string().optional(),
 });
   
 type FormValues = z.infer<typeof formSchema>;
 
 // const API_URL = "http://localhost:3333/agents/process"
 const API_URL = "https://debuggies.app.n8n.cloud/webhook/cf4ec7e0-f8cc-46cc-95b4-c6e696d43688"
+const API_URL_SECOND_REQUEST = "https://debuggies.app.n8n.cloud/webhook/cf4ec7e0-f8cc-46cc-95b4-c6e696d43689"
 
 export default function AnimatedStepper() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [dataResponse, setDataResponse] = useState({})
   const [previewModal, setPreviewModal] = useState(false)
-  const [chatId, setChatId] = useState("")
   const [isEditing, setIsEditing] = useState(false)
+  const [isFirstTimeRequesting, setIsFirstTimeRequesting] = useState(true)
+  const [outputFirstEnvironment, setOutputFirstEnvironment] = useState("")
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -50,12 +53,30 @@ export default function AnimatedStepper() {
       environment: 'Production',
       industry: "Finance",
       cloud: "AWS",
+      recommendations: "",
     },
     validationSchema: toFormikValidationSchema(formSchema),
     onSubmit: async (values) => {
       setIsLoading(true)
       try {
-        const response = await axios.post(API_URL, {...values, chatId});
+        if (isFirstTimeRequesting) {
+          delete values.recommendations
+          setIsFirstTimeRequesting(false)
+        }else{
+          const response = await axios.post(API_URL_SECOND_REQUEST, {existing_output: outputFirstEnvironment, recommendations: values.recommendations});
+          setOutputFirstEnvironment(response.data[0].json)
+          const formattedData = {
+            functionalDiagram: response.data[0].json.mermaid_1,
+            infrastructureDiagram: response.data[0].json.mermaid_2,
+            rationale: response.data[0].json.markdown_rationale,
+            terraform: response.data[0].json.terraform_template,
+            architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
+          }
+          setDataResponse(formattedData)
+          setPreviewModal(true)
+          return
+        }
+        const response = await axios.post(API_URL, values);
         //format data
         if (API_URL !== "https://debuggies.app.n8n.cloud/webhook/cf4ec7e0-f8cc-46cc-95b4-c6e696d43688") {
           setDataResponse({...response.data.data, functionalDiagram: response.data.data.diagrams?.functional, infrastructureDiagram: response.data.data.diagrams?.infrastructure})
@@ -67,10 +88,8 @@ export default function AnimatedStepper() {
             terraform: response.data[0].json.terraform_template,
             architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
           }
-          if (response.data[0].chatId) {
-            setChatId(response.data[0].chatId)
-          }
           setDataResponse(formattedData)
+          setOutputFirstEnvironment(response.data[0].json)
         }
         setPreviewModal(true)
       } catch (error) {
@@ -242,24 +261,15 @@ export default function AnimatedStepper() {
                                     <Pencil className="h-4 w-4" />
                                   </Button>
                                 </div>
-                                {isEditing ? (
-                                  <Textarea 
-                                    className="mt-2 w-full" 
-                                    name="actual_state" 
-                                    value={formik.values.actual_state}
-                                    onChange={formik.handleChange}
-                                    placeholder="Type all relevant information here."
-                                    autoFocus
-                                  />
-                                ) : (
                                   <p className="mt-2 whitespace-pre-wrap" style={{ lineHeight: 1.2 }}>
                                     {formik.values.actual_state}
                                   </p>
-                                )}
                               </li>
                               <li className="mb-2"><b>Industry:</b><br /> <p>{formik.values.industry}</p></li>
                               <li className="mb-2"><b>Cloud provider:</b><br /> <p>{formik.values.cloud}</p></li>
                               <li className="mb-2"><b>Environment:</b><br /> <p>{formik.values.environment}</p></li>
+                              <b className="text-sm mt-8">Add your recommendations here. Any relevant change that you want to made</b>
+                              <Textarea className="mt-4 w-full" placeholder="Type all relevant information here." name="recommendations" id="recommendations" onChange={formik.handleChange} value={formik.values.recommendations} />
                             </ul>
                         </form>
                     )}
