@@ -64,13 +64,13 @@ export default function AnimatedStepper() {
           setIsFirstTimeRequesting(false)
         }else{
           const response = await axios.post(API_URL_SECOND_REQUEST, {existing_output: outputFirstEnvironment, recommendations: values.recommendations});
-          setOutputFirstEnvironment(response.data[0].json)
+          setOutputFirstEnvironment(response.data[0]?.json)
           const formattedData = {
-            functionalDiagram: response.data[0].json.mermaid_1,
-            infrastructureDiagram: response.data[0].json.mermaid_2,
-            rationale: response.data[0].json.markdown_rationale,
-            terraform: response.data[0].json.terraform_template,
-            architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
+            functionalDiagram: response.data[0]?.json.mermaid_1,
+            infrastructureDiagram: response.data[0]?.json.mermaid_2,
+            rationale: response.data[0]?.json.markdown_rationale,
+            terraform: response.data[0]?.json.terraform_template,
+            architecturalDecisionRecord: response.data[0]?.json.markdown_architectural_decision_record,
           }
           setDataResponse(formattedData)
           setPreviewModal(true)
@@ -82,14 +82,14 @@ export default function AnimatedStepper() {
           setDataResponse({...response.data.data, functionalDiagram: response.data.data.diagrams?.functional, infrastructureDiagram: response.data.data.diagrams?.infrastructure})
         }else{
           const formattedData = {
-            functionalDiagram: response.data[0].json.mermaid_1,
-            infrastructureDiagram: response.data[0].json.mermaid_2,
-            rationale: response.data[0].json.markdown_rationale,
-            terraform: response.data[0].json.terraform_template,
-            architecturalDecisionRecord: response.data[0].json.markdown_architectural_decision_record,
+            functionalDiagram: response.data[0]?.json.mermaid_1,
+            infrastructureDiagram: response.data[0]?.json.mermaid_2,
+            rationale: response.data[0]?.json.markdown_rationale,
+            terraform: response.data[0]?.json.terraform_template,
+            architecturalDecisionRecord: response.data[0]?.json.markdown_architectural_decision_record,
           }
           setDataResponse(formattedData)
-          setOutputFirstEnvironment(response.data[0].json)
+          setOutputFirstEnvironment(response.data[0]?.json)
         }
         setPreviewModal(true)
       } catch (error) {
