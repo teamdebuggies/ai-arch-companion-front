@@ -20,7 +20,7 @@ interface PreviewModalProps {
   handleGithubResponse: (response: any) => void;
 }
 
-const API_URL_GITHUB = "https://localhost:3333/github/create-project";
+const API_URL_GITHUB = "http://localhost:3333/github/create-project";
 
 const PreviewModal: React.FC<PreviewModalProps> = ({ open, onClose, data, handleGithubResponse }) => {
   
